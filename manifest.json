@@ -1,0 +1,15 @@
+{
+  "name": "長野 林道カルテマップ",
+  "short_name": "林道カルテ",
+  "description": "長野県の名前つき林道のカルテと通行情報を地図表示。オフライン対応。",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#12161b",
+  "theme_color": "#12161b",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

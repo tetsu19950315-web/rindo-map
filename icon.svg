@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#12161b"/>
+  <!-- 山 -->
+  <path d="M64 372 L192 180 L288 316 L344 236 L448 372 Z" fill="#232b35"/>
+  <path d="M192 180 L246 261 L214 261 L226 244 L205 244 Z" fill="#e8edf2" opacity="0.85"/>
+  <!-- 林道（ダート＝オレンジの蛇行ライン） -->
+  <path d="M120 430 C 200 400, 190 330, 260 320 S 350 300, 396 250"
+        fill="none" stroke="#ff8a00" stroke-width="22" stroke-linecap="round"
+        stroke-dasharray="2 34"/>
+  <path d="M120 430 C 200 400, 190 330, 260 320 S 350 300, 396 250"
+        fill="none" stroke="#ff8a00" stroke-width="8" stroke-linecap="round" opacity="0.55"/>
+  <!-- カルテピン -->
+  <circle cx="396" cy="250" r="34" fill="#22d3a5" stroke="#04140f" stroke-width="10"/>
+</svg>

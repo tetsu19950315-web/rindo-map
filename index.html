@@ -132,7 +132,35 @@
     border:1px solid var(--line);border-radius:7px;padding:7px 8px;outline:none}
   .fclear{font-size:12.5px;padding:7px 12px;border-radius:7px;border:1px solid var(--line);
     background:var(--panel-2);color:var(--ink-dim);cursor:pointer}
-  @media (prefers-reduced-motion:reduce){.spin{animation:none}.sheet{transition:none}}
+  /* 実走メモ */
+  .mform{position:absolute;left:0;right:0;bottom:0;z-index:40;max-height:88vh;background:var(--panel);
+    border-top:1px solid var(--line);border-radius:16px 16px 0 0;transform:translateY(101%);
+    transition:transform .28s cubic-bezier(.4,0,.2,1);padding:0 0 calc(env(safe-area-inset-bottom) + 14px);
+    display:flex;flex-direction:column}
+  .mform.open{transform:translateY(0)}
+  .mform h3{margin:0;font-size:16px;padding:6px 16px 4px}
+  .mbody{overflow-y:auto;padding:6px 16px;-webkit-overflow-scrolling:touch}
+  .mfield{margin-top:11px}
+  .mfield label{display:block;font-size:11.5px;color:var(--ink-dim);margin-bottom:4px;letter-spacing:.04em}
+  .mfield input[type=text],.mfield input[type=date],.mfield select,.mfield textarea{
+    width:100%;font-size:15px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line);
+    border-radius:8px;padding:9px 11px;outline:none;font-family:var(--sans)}
+  .mfield textarea{min-height:68px;resize:vertical}
+  .mstars{display:flex;gap:5px}
+  .mstars span{font-size:26px;color:#3a4450;cursor:pointer;line-height:1}
+  .mstars span.on{color:var(--accent)}
+  .mgps{display:flex;gap:8px;align-items:center}
+  .mgps .co{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+  .mactions{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px 0}
+  .mactions button{flex:1;justify-content:center;min-width:88px}
+  .mcard{border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-top:8px}
+  .mcard .mh{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .mcard .mh b{font-size:14px}
+  .mcard .md{font-size:11px;color:var(--ink-dim);font-family:var(--mono)}
+  .mcard .mmeta{font-size:12.5px;color:var(--ink-dim);margin-top:4px;line-height:1.5}
+  .mcard .mbtns{display:flex;gap:6px;margin-top:8px}
+  .mcard .mbtns button{font-size:12px;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);cursor:pointer}
+  @media (prefers-reduced-motion:reduce){.spin{animation:none}.sheet{transition:none}.mform{transition:none}}
 </style>
 </head>
 <body>
@@ -144,6 +172,7 @@
   <button id="searchBtn">🔍</button>
   <button id="lv0Btn" class="on">Lv0表示中</button>
   <button id="karteBtn" class="kon">カルテ表示中</button>
+  <button id="memoBtn" title="実走メモ">📝</button>
   <button id="gps">📍</button>
 </div>
 
@@ -193,6 +222,37 @@
     <button id="sh-share">🔗 共有</button>
   </div>
   <div class="sheet-body" id="sh-body"></div>
+</div>
+
+<div class="mform" id="mform">
+  <div class="grip"></div>
+  <h3 id="mf-title">実走メモ</h3>
+  <div class="mbody">
+    <div class="mfield"><label>林道名</label><input type="text" id="mf-name" placeholder="林道名（未収録路線は自由入力）" /></div>
+    <div class="mfield"><label>走行日</label><input type="date" id="mf-date" /></div>
+    <div class="mfield"><label>現在地（GPS）</label><div class="mgps"><button class="pbtn nav" id="mf-gps" style="flex:none;padding:8px 12px">📍 現在地を取得</button><span class="co" id="mf-coord">—</span></div></div>
+    <div class="mfield"><label>路面</label><select id="mf-surface"><option value="">—</option><option>舗装</option><option>フラットダート</option><option>やや荒れたダート</option><option>ガレ場・荒れ</option><option>ぬかるみ・泥濘</option><option>雪・凍結</option></select></div>
+    <div class="mfield"><label>難易度</label><select id="mf-diff"><option value="">—</option><option>初級</option><option>中級</option><option>上級</option></select></div>
+    <div class="mfield"><label>通行</label><select id="mf-through"><option value="">—</option><option>完抜けOK</option><option>ピストン（行止り）</option><option>一部通行止</option><option>全面通行止</option></select></div>
+    <div class="mfield"><label>景色</label><div class="mstars" id="mf-scenery" data-v="0"></div></div>
+    <div class="mfield"><label>おすすめ度</label><div class="mstars" id="mf-rating" data-v="0"></div></div>
+    <div class="mfield"><label>自由メモ</label><textarea id="mf-memo" placeholder="路面の様子・分岐・ゲート・危険箇所など"></textarea></div>
+  </div>
+  <div class="mactions">
+    <button class="primary" id="mf-save">保存</button>
+    <button id="mf-cancel">キャンセル</button>
+  </div>
+</div>
+
+<div class="mform" id="mlist">
+  <div class="grip"></div>
+  <h3>実走メモ一覧 <span id="ml-count" style="color:var(--ink-dim);font-size:12px"></span></h3>
+  <div class="mbody" id="ml-body"></div>
+  <div class="mactions">
+    <button class="kon" id="ml-new">📍 現在地で新規</button>
+    <button id="ml-export">エクスポート</button>
+    <button id="ml-close">閉じる</button>
+  </div>
 </div>
 
 <script>
@@ -269,7 +329,7 @@ function addLayers(){
 
   // Lv0（骨格列挙・カルテの下に描画）
   map.addSource("lv0",{type:"geojson",data:lv0FC()});
-  map.addLayer({id:"lv0-dot",type:"circle",source:"lv0",paint:{"circle-radius":["case",["get","v"],["interpolate",["linear"],["zoom"],7,3,12,6],["interpolate",["linear"],["zoom"],7,2,12,4.5]],"circle-color":["case",["get","v"],"#ffd166","#5db4ff"],"circle-opacity":0.85,"circle-stroke-width":1,"circle-stroke-color":"#0a1a2a"}});
+  map.addLayer({id:"lv0-dot",type:"circle",source:"lv0",paint:{"circle-radius":["interpolate",["linear"],["zoom"],7,["case",["get","v"],3,2],12,["case",["get","v"],6,4.5]],"circle-color":["case",["get","v"],"#ffd166","#5db4ff"],"circle-opacity":0.85,"circle-stroke-width":1,"circle-stroke-color":"#0a1a2a"}});
   map.addLayer({id:"lv0-label",type:"symbol",source:"lv0",minzoom:12,layout:{"text-field":["get","name"],"text-size":10.5,"text-font":["Noto Sans Regular"],"text-offset":[0,1.1],"text-anchor":"top","text-allow-overlap":false},paint:{"text-color":"#bcd9f7","text-halo-color":"#0c1420","text-halo-width":1.6}});
 
   // カルテ
@@ -304,6 +364,13 @@ function addLayers(){
   });
   map.on("mouseenter","lv0-dot",()=>map.getCanvas().style.cursor="pointer");
   map.on("mouseleave","lv0-dot",()=>map.getCanvas().style.cursor="");
+  // 実走メモ（未収録路線の単独スポット）
+  map.addSource("fieldnotes",{type:"geojson",data:fnSpotFC()});
+  map.addLayer({id:"fn-dot",type:"circle",source:"fieldnotes",paint:{"circle-radius":9,"circle-color":"#b57edc","circle-opacity":0.9,"circle-stroke-width":2,"circle-stroke-color":"#1a1024"}});
+  map.addLayer({id:"fn-ico",type:"symbol",source:"fieldnotes",layout:{"text-field":"📝","text-size":11,"text-allow-overlap":true}});
+  map.on("click","fn-dot",e=>{ const n=FN.find(x=>x.id===e.features[0].properties.id); if(n)openMemoForm({targetId:null,name:n.name,lat:n.lat,lng:n.lng},n); });
+  map.on("mouseenter","fn-dot",()=>map.getCanvas().style.cursor="pointer");
+  map.on("mouseleave","fn-dot",()=>map.getCanvas().style.cursor="");
   document.getElementById("stat").innerHTML=`カルテ <b>${MASTER.master.length}</b> ・ Lv0 <b>${LV0.length}</b> ・ Lv1候補 <b>${LV0.filter(r=>r.v).length}</b>`;
   if(typeof applyKarteFilters==="function")applyKarteFilters();
 }
@@ -361,9 +428,15 @@ function openKarte(id){
     ${srcs.map(s=>`<div class="src"><div class="st"><span class="type">${s.type}</span><span style="color:var(--ink-dim);font-size:11px">${s.checked}</span></div>
       <a href="${s.url}" target="_blank" rel="noopener">${s.title}</a>
       ${s.memo?`<div class="memo">${s.memo}</div>`:""}</div>`).join("")}
+    <div class="sect">実走メモ（この端末の記録）</div>
+    <div class="sheet-actions" style="padding:0 0 2px"><button class="kon" id="sh-memo-add">📝 この林道の実走メモを追加</button></div>
+    <div id="sh-memos" style="margin-top:8px"></div>
     <div class="verify">⚠ 通行状況・冬季閉鎖・路面は頻繁に変わります。出発前に自治体/森林管理署の最新情報を確認し、走行可否は自己責任で判断してください。座標は概略です。現地では地図上のOSM林道ラインをタップして正確な入口座標を確認してください。</div>
   `;
   document.getElementById("sh-body").innerHTML=body;
+  const addBtn=document.getElementById("sh-memo-add");
+  if(addBtn)addBtn.onclick=()=>fnAddFor(m.id);
+  renderKarteMemos(m.id);
   sheet.classList.add("open");
 }
 document.getElementById("sh-close").onclick=()=>sheet.classList.remove("open");
@@ -567,7 +640,8 @@ function openLv0Popup(rec){
     <div class="prow"><span class="pk">地点</span><span class="pv" style="font-family:var(--mono)">${lat.toFixed(5)}, ${lng.toFixed(5)}</span></div>
     <div class="pbtns"><button class="pbtn nav" onclick="navTo(${lat},${lng})">🧭 ナビ</button>
     <button class="pbtn" onclick="copyCoord(${lat},${lng})">コピー</button>
-    <button class="pbtn" onclick="shareLink('${rec.i}')">🔗 共有</button></div>`;
+    <button class="pbtn" onclick="shareLink('${rec.i}')">🔗 共有</button>
+    <button class="pbtn" onclick="fnAddFor('${rec.i}')">📝 メモ</button></div>`;
   new maplibregl.Popup({closeButton:true,maxWidth:"270px"}).setLngLat([lng,lat]).setHTML(html).addTo(map);
 }
 document.getElementById("sh-share").onclick=()=>{ if(curKarte)shareLink(curKarte.id); };
@@ -577,6 +651,119 @@ map.on("load",()=>{
   if(KARTE_BY_ID[id]){const m=KARTE_BY_ID[id];map.flyTo({center:m.coord_approx,zoom:13.5});setTimeout(()=>openKarte(id),500);}
   else if(LV0_BY_ID[id]){const r=LV0_BY_ID[id];map.flyTo({center:r.c,zoom:13.5});setTimeout(()=>openLv0Popup(r),600);}
 });
+
+/* ===== 実走メモ（localStorage・オフライン・端末内保存） ===== */
+const FN_KEY="rindo_fieldnotes_v1";
+function fnLoad(){ try{return JSON.parse(localStorage.getItem(FN_KEY))||[];}catch(_){return[];} }
+function fnStore(a){ try{localStorage.setItem(FN_KEY,JSON.stringify(a));}catch(_){toast("保存に失敗（端末の空き容量を確認）");} }
+let FN=fnLoad();
+let fnEditId=null, fnTarget={targetId:null,name:"",lat:null,lng:null};
+const mform=document.getElementById("mform"), mlist=document.getElementById("mlist");
+
+function fnBuildStars(el){ el.innerHTML="";
+  for(let i=1;i<=5;i++){ const s=document.createElement("span"); s.textContent="★"; s.dataset.i=i;
+    s.onclick=()=>{ el.dataset.v=(+el.dataset.v===i)?0:i; fnPaintStars(el); }; el.appendChild(s); }
+  fnPaintStars(el); }
+function fnPaintStars(el){ const v=+el.dataset.v; [...el.children].forEach((s,ix)=>s.classList.toggle("on",ix<v)); }
+function fnSetStars(el,v){ el.dataset.v=v||0; fnPaintStars(el); }
+fnBuildStars(document.getElementById("mf-scenery"));
+fnBuildStars(document.getElementById("mf-rating"));
+
+function fnSpotFC(){ return {type:"FeatureCollection",features:FN.filter(n=>!n.targetId&&n.lat!=null).map(n=>({type:"Feature",geometry:{type:"Point",coordinates:[n.lng,n.lat]},properties:{id:n.id,name:n.name}}))}; }
+function fnRefreshMap(){ if(map.getSource("fieldnotes"))map.getSource("fieldnotes").setData(fnSpotFC()); }
+
+function openMemoForm(target,editNote){
+  fnTarget=Object.assign({targetId:null,name:"",lat:null,lng:null},target||{});
+  fnEditId=editNote?editNote.id:null;
+  const g=id=>document.getElementById(id);
+  g("mf-title").textContent=editNote?"実走メモを編集":"実走メモ";
+  g("mf-name").value=editNote?editNote.name:(fnTarget.name||"");
+  g("mf-date").value=(editNote&&editNote.date)||new Date().toISOString().slice(0,10);
+  g("mf-surface").value=editNote?(editNote.surface||""):"";
+  g("mf-diff").value=editNote?(editNote.difficulty||""):"";
+  g("mf-through").value=editNote?(editNote.through||""):"";
+  fnSetStars(g("mf-scenery"),editNote?editNote.scenery:0);
+  fnSetStars(g("mf-rating"),editNote?editNote.rating:0);
+  g("mf-memo").value=editNote?(editNote.memo||""):"";
+  const lat=editNote?editNote.lat:fnTarget.lat, lng=editNote?editNote.lng:fnTarget.lng;
+  fnTarget.lat=lat; fnTarget.lng=lng;
+  g("mf-coord").textContent=(lat!=null&&lng!=null)?`${(+lat).toFixed(5)}, ${(+lng).toFixed(5)}`:"未取得";
+  mlist.classList.remove("open"); sheet.classList.remove("open"); mform.classList.add("open");
+}
+document.getElementById("mf-gps").onclick=()=>{
+  if(!navigator.geolocation){toast("この端末は位置情報に非対応");return;}
+  toast("現在地を取得中…");
+  navigator.geolocation.getCurrentPosition(p=>{
+    fnTarget.lat=p.coords.latitude; fnTarget.lng=p.coords.longitude;
+    document.getElementById("mf-coord").textContent=`${fnTarget.lat.toFixed(5)}, ${fnTarget.lng.toFixed(5)}`;
+    toast("現在地を取得しました");
+  },e=>toast("取得失敗: "+(e.code===1?"アクセス拒否（HTTPSで許可を）":e.message)),{enableHighAccuracy:true,timeout:15000});
+};
+document.getElementById("mf-cancel").onclick=()=>mform.classList.remove("open");
+document.getElementById("mf-save").onclick=()=>{
+  const g=id=>document.getElementById(id);
+  const note={ id:fnEditId||("fn"+Date.now()), targetId:fnTarget.targetId||null,
+    name:g("mf-name").value.trim()||"(名称未記入)", date:g("mf-date").value||null,
+    lat:fnTarget.lat!=null?+(+fnTarget.lat).toFixed(6):null, lng:fnTarget.lng!=null?+(+fnTarget.lng).toFixed(6):null,
+    surface:g("mf-surface").value||null, difficulty:g("mf-diff").value||null, through:g("mf-through").value||null,
+    scenery:+g("mf-scenery").dataset.v||null, rating:+g("mf-rating").dataset.v||null,
+    memo:g("mf-memo").value.trim()||null, ts:new Date().toISOString() };
+  if(fnEditId){ const ix=FN.findIndex(x=>x.id===fnEditId); if(ix>=0)FN[ix]=note; } else FN.push(note);
+  fnStore(FN); fnRefreshMap(); mform.classList.remove("open");
+  toast("実走メモを保存しました（この端末に保存）");
+  if(curKarte&&note.targetId===curKarte.id)renderKarteMemos(curKarte.id);
+  if(mlist.classList.contains("open"))renderMemoList();
+};
+
+function fnStars(v){ return v?"★".repeat(v):""; }
+function fnCard(n){
+  const st=(k,v)=>v?`${k}:${v}`:"";
+  const meta=[st("路面",n.surface),st("難",n.difficulty),st("通行",n.through),n.scenery?"景"+fnStars(n.scenery):"",n.rating?"推"+fnStars(n.rating):""].filter(Boolean).join(" ・ ");
+  return `<div class="mcard" data-id="${n.id}">
+    <div class="mh"><b>${n.name}</b><span class="md">${n.date||""}</span></div>
+    ${meta?`<div class="mmeta">${meta}</div>`:""}
+    ${n.memo?`<div class="mmeta" style="color:var(--ink)">${n.memo}</div>`:""}
+    ${n.lat!=null?`<div class="md">${(+n.lat).toFixed(5)}, ${(+n.lng).toFixed(5)}</div>`:""}
+    <div class="mbtns"><button data-act="edit">編集</button>${n.lat!=null?'<button data-act="nav">🧭ナビ</button>':""}<button data-act="del">削除</button></div>
+  </div>`;
+}
+function fnWireCards(box){
+  box.querySelectorAll(".mcard").forEach(card=>{
+    const id=card.dataset.id, n=FN.find(x=>x.id===id); if(!n)return;
+    card.querySelector('[data-act="edit"]').onclick=()=>openMemoForm({targetId:n.targetId,name:n.name,lat:n.lat,lng:n.lng},n);
+    const nav=card.querySelector('[data-act="nav"]'); if(nav)nav.onclick=()=>navTo(n.lat,n.lng);
+    card.querySelector('[data-act="del"]').onclick=()=>{ if(confirm("このメモを削除しますか？")){ FN=FN.filter(x=>x.id!==id); fnStore(FN); fnRefreshMap();
+      if(box.id==="ml-body")renderMemoList(); else if(curKarte)renderKarteMemos(curKarte.id); } };
+  });
+}
+function renderKarteMemos(id){
+  const box=document.getElementById("sh-memos"); if(!box)return;
+  const mine=FN.filter(n=>n.targetId===id).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  box.innerHTML=mine.length?mine.map(fnCard).join(""):`<div style="color:var(--ink-dim);font-size:12.5px">まだ実走メモはありません。走行中にこの端末へ記録できます（オフライン可）。</div>`;
+  fnWireCards(box);
+}
+function renderMemoList(){
+  const box=document.getElementById("ml-body");
+  const all=[...FN].sort((a,b)=>(b.ts||"").localeCompare(a.ts||""));
+  document.getElementById("ml-count").textContent=`(${all.length}件)`;
+  box.innerHTML=all.length?all.map(fnCard).join(""):`<div style="color:var(--ink-dim);font-size:13px;padding:10px 0;line-height:1.6">まだ実走メモはありません。<br>地図上の林道ピンやカルテの「📝 実走メモを追加」、または下の「📍 現在地で新規」で記録できます。<br>すべて<b>この端末内に保存</b>され、電波の無い山中でもオフラインで使えます。あとで「エクスポート」してマスターへ反映できます。</div>`;
+  fnWireCards(box);
+}
+document.getElementById("memoBtn").onclick=()=>{ sheet.classList.remove("open"); mform.classList.remove("open"); renderMemoList(); mlist.classList.add("open"); };
+document.getElementById("ml-close").onclick=()=>mlist.classList.remove("open");
+document.getElementById("ml-new").onclick=()=>openMemoForm({targetId:null,name:"",lat:null,lng:null});
+document.getElementById("ml-export").onclick=()=>{
+  if(!FN.length){toast("メモがありません");return;}
+  const data=JSON.stringify(FN,null,2);
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(data).then(()=>toast(`${FN.length}件をJSONでクリップボードにコピー`),()=>fnDownload(data));
+  else fnDownload(data);
+};
+function fnDownload(data){ try{ const b=new Blob([data],{type:"application/json"}); const u=URL.createObjectURL(b);
+  const a=document.createElement("a"); a.href=u; a.download="rindo_field_notes.json"; a.click(); URL.revokeObjectURL(u); toast("JSONをダウンロードしました");
+}catch(_){toast("エクスポート失敗");} }
+window.fnAddFor=id=>{ const k=KARTE_BY_ID[id], l=LV0_BY_ID[id];
+  if(k)openMemoForm({targetId:id,name:k.name,lat:k.coord_approx[1],lng:k.coord_approx[0]});
+  else if(l)openMemoForm({targetId:id,name:l.n,lat:l.c[1],lng:l.c[0]}); };
 
 /* ===== Service Worker 登録（PWA・オフライン） ===== */
 if("serviceWorker" in navigator){

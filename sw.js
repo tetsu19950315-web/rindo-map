@@ -1,5 +1,5 @@
 /* 長野 林道カルテマップ Service Worker — アプリシェル＋地図タイルのオフラインキャッシュ */
-const CACHE = "rindo-map-v1";
+const CACHE = "rindo-map-v2";
 const SHELL = [
   "./", "./index.html", "./manifest.json", "./icon.svg",
   "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js",
@@ -46,14 +46,14 @@ self.addEventListener("fetch", e => {
     return;
   }
 
-  // アプリシェル(同一オリジン): キャッシュ優先→ネットワーク→index.htmlフォールバック
+  // アプリシェル(同一オリジン): ネットワーク優先（更新を即反映）→ 失敗時キャッシュ→index.htmlフォールバック（オフライン）
   e.respondWith(
-    caches.match(req).then(hit => hit || fetch(req).then(res => {
+    fetch(req).then(res => {
       if (res && res.ok && url.origin === location.origin) {
         const cl = res.clone();
         caches.open(CACHE).then(c => c.put(req, cl));
       }
       return res;
-    }).catch(() => caches.match("./index.html")))
+    }).catch(() => caches.match(req).then(hit => hit || caches.match("./index.html")))
   );
 });

@@ -813,7 +813,14 @@ window.fnAddFor=id=>{ const k=KARTE_BY_ID[id], l=LV0_BY_ID[id];
 
 /* ===== Service Worker 登録（PWA・オフライン） ===== */
 if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+    // 新しいSWが有効化されたら、古いキャッシュのまま使い続けないよう自動で1回だけ再読込する
+    let swRefreshed=false;
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{
+      if(swRefreshed)return; swRefreshed=true; location.reload();
+    });
+  });
 }
 </script>
 </body>

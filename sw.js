@@ -1,5 +1,5 @@
 /* 長野 林道カルテマップ Service Worker — アプリシェル＋地図タイルのオフラインキャッシュ */
-const CACHE = "rindo-map-v2";
+const CACHE = "rindo-map-v3";
 const SHELL = [
   "./", "./index.html", "./manifest.json", "./icon.svg",
   "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js",
@@ -27,22 +27,21 @@ self.addEventListener("fetch", e => {
   // Overpass API はネットワーク優先・キャッシュしない（鮮度優先）
   if (/overpass-api\.de/.test(url.host)) return;
 
-  // 地図タイル(GSI) / MapLibre CDN / グリフ: キャッシュ優先＋ランタイム追加（オフライン用）
+  // 地図タイル(GSI) / MapLibre CDN(JS/CSS) / グリフ: ネットワーク優先（常に最新を取得）
+  //   ・オフライン/取得失敗時のみキャッシュへフォールバック（地図を見られる状態を維持）
+  //   ・MapLibre本体(JS/CSS)をキャッシュ優先にすると、初回に不完全なレスポンスが
+  //     キャッシュされた場合にレイアウト崩れ等が固定化されてしまうため、鮮度を優先する
   const runtime = /cyberjapandata\.gsi\.go\.jp/.test(url.host)
     || /demotiles\.maplibre\.org/.test(url.host)
     || /unpkg\.com/.test(url.host);
   if (runtime) {
-    e.respondWith(caches.open(CACHE).then(async c => {
-      const hit = await c.match(req);
-      if (hit) return hit;
-      try {
-        const res = await fetch(req);
-        if (res && (res.ok || res.type === "opaque")) c.put(req, res.clone());
-        return res;
-      } catch (_) {
-        return hit || Response.error();
+    e.respondWith(fetch(req).then(res => {
+      if (res && (res.ok || res.type === "opaque")) {
+        const cl = res.clone();
+        caches.open(CACHE).then(c => c.put(req, cl));
       }
-    }));
+      return res;
+    }).catch(() => caches.open(CACHE).then(c => c.match(req))));
     return;
   }
 
